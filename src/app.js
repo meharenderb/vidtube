@@ -1,11 +1,13 @@
-const express = require('express');
+import express from 'express'
+import cors from 'cors'
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
-app.get('/',(req, res) => {
-    res.send("Hi from express!")
-})
+app.use(cors({
+    origin: process.env.CORS_ORIGIN,
+    credentials: true
+}))
 
-app.listen(8080,() => {
-    console.log('Server is running on port 8080');
-},)
+
+export { app }
