@@ -4,6 +4,7 @@ import { ApiError } from '../utils/apiError.js'
 import { uploadCloudinary } from '../utils/cloudinary.js'
 import { ApiResponse } from '../utils/apiResponse.js'
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 
 // GENERATE ACCESS/REFRESH TOKEN
 const generateAccessRefreshToken = async (userId) => {
@@ -198,4 +199,56 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 })
 
-export { registerUser, loginUser, logoutUser, refreshAccessToken }
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword, confirmNewPassword } = req.body
+
+    if (newPassword !== confirmNewPassword) {
+        throw new ApiError(400, 'Password and Confirm Password does not match')
+    }
+
+    const user = await User.findById(req.user._id)
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword, user.password)
+
+    if (!isPasswordCorrect) {
+        throw new ApiError(401, "You old password does not matched")
+    }
+
+    user.password = newPassword
+
+    await user.save({ validateBeforeSave: false })
+
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, {}, "Password changed successfully")
+        )
+
+})
+
+const getCurrentUser = asyncHandler(async (req, res) => {
+    return res
+        .status(200)
+        .json(
+            new ApiResponse(200, req.user, "Current User Fetched Successfully")
+        )
+})
+
+const changeUserAvatar = asyncHandler(async (req, res) => {
+
+})
+
+const changeUserThumbnail = asyncHandler(async (req, res) => {
+
+})
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    refreshAccessToken,
+    changeCurrentPassword,
+    changeUserAvatar,
+    changeUserThumbnail,
+    getCurrentUser
+}
