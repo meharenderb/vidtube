@@ -235,11 +235,65 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 })
 
 const changeUserAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req?.file?.path
 
+    if (!avatarLocalPath) {
+        throw new ApiError(401, "Avatar not found")
+    }
+
+    const uploadedAvatar = await uploadCloudinary(avatarLocalPath)
+
+    if (!uploadedAvatar) {
+        throw new ApiError(401, "Something went wrong while uploading the avatar")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: { avatar: uploadedAvatar?.url || '' }
+        },
+        {
+            new: true
+        }
+    ).select('-password -refreshToken')
+
+
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(200, user, "Avatar uploaded successfully")
+        )
 })
 
-const changeUserThumbnail = asyncHandler(async (req, res) => {
+const changeUserCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req?.file?.path
 
+    if (!coverImageLocalPath) {
+        throw new ApiError(401, "Cover Image not found")
+    }
+
+    const uploadedCoverImage = await uploadCloudinary(coverImageLocalPath)
+
+    if (!uploadedCoverImage) {
+        throw new ApiError(401, "Something went wrong while uploading the avatar")
+    }
+
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: { avatar: uploadedCoverImage?.url || '' }
+        },
+        {
+            new: true
+        }
+    ).select('-password -refreshToken')
+
+
+    return res
+        .status(201)
+        .json(
+            new ApiResponse(200, user, "Cover Image uploaded successfully")
+        )
 })
 
 export {
@@ -249,6 +303,6 @@ export {
     refreshAccessToken,
     changeCurrentPassword,
     changeUserAvatar,
-    changeUserThumbnail,
+    changeUserCoverImage,
     getCurrentUser
 }
